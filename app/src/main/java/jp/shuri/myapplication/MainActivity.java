@@ -1,5 +1,7 @@
 package jp.shuri.myapplication;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,8 +9,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.Locale;
+
+import okhttp3.Call;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Callback;
 
 public class MainActivity extends AppCompatActivity
     implements TextToSpeech.OnInitListener {
@@ -29,7 +40,32 @@ public class MainActivity extends AppCompatActivity
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                speechText();
+                String url = mEditText.getText().toString();
+
+/*
+                OkHttpClient client = new OkHttpClient.Builder().build();
+                Response response = client.newCall(request).execute();
+*/
+                OkHttpClient client = new OkHttpClient();
+
+                Request request = new Request.Builder().url(url).build();
+
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (response.code() == 200) {
+                            sfen = response.body().string();
+                            speechText();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "通信異常 HTTP Status : " + response.code(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
         });
 
@@ -280,7 +316,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 */
-        sfen = mEditText.getText().toString();
+//        sfen = mEditText.getText().toString();
 
         if (tts.isSpeaking()) {
             tts.stop();
