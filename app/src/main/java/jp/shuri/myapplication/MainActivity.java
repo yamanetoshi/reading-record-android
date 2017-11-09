@@ -1,7 +1,5 @@
 package jp.shuri.myapplication;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,7 +13,6 @@ import java.io.IOException;
 import java.util.Locale;
 
 import okhttp3.Call;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -40,6 +37,7 @@ public class MainActivity extends AppCompatActivity
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 String url = mEditText.getText().toString();
 
 /*
@@ -181,7 +179,7 @@ public class MainActivity extends AppCompatActivity
     private void speechPosition(boolean isGyokuKata) {
 
         int row = 1;
-        int column = 9;
+        int column = 1;
         int sfenIndex = 0;
         speechStr = "";
 
@@ -193,13 +191,13 @@ public class MainActivity extends AppCompatActivity
 
             if (haichi[sfenIndex].equals("/")) {
                 row++;
-                column = 9;
+                column = 1;
                 continue;
             }
 
             if (isNumber(haichi[sfenIndex])) {
                 int num = Integer.parseInt(haichi[sfenIndex]);
-                column -= num;
+                column += num;
             }
 
             if (haichi[sfenIndex].equals("+")) {
@@ -223,7 +221,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 isNari = false;
-                column--;
+                column++;
             }
 
             if (Character.isLowerCase(haichi[sfenIndex].charAt(0))) {
@@ -241,7 +239,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 isNari = false;
-                column--;
+                column++;
             }
         }
 
@@ -275,7 +273,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void speechKoma() {
-
+        boolean isPlus = false;
         isNari = false;
 
         if (sfen.equals("")) {
@@ -285,6 +283,31 @@ public class MainActivity extends AppCompatActivity
 
         sfenSplit = sfen.split(" ");
         haichi = sfenSplit[0].split("");
+
+        StringBuilder base = new StringBuilder();
+        StringBuilder rev = new StringBuilder();
+        StringBuilder revHaich = new StringBuilder();
+        for (int i = 0; i < haichi.length; i++) {
+            base.append(haichi[i]);
+        }
+        base.reverse();
+        for (int i = base.length() - 1; i >=0; i--) {
+            if (base.substring(i, i+1).equals("/")) {
+                revHaich.append(rev);
+                revHaich.append("/");
+                rev = new StringBuilder();
+            } else if (base.substring(i, i+1).equals("+")) {
+                isPlus = true;
+            } else {
+                rev.insert(0, base.substring(i, i+1));
+                if (isPlus) {
+                    rev.insert(0, "+");
+                    isPlus = false;
+                }
+            }
+        }
+        haichi = revHaich.toString().split("");
+
         mochigoma = sfenSplit[2].split("");
         speechStr = "ぎょくかた";
 
